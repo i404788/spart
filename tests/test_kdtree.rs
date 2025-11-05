@@ -216,6 +216,33 @@ fn test_kdtree_dimension_mismatch() {
 }
 
 #[test]
+fn test_kdtree_delete_many() {
+    let mut tree: KdTree<Point2D<&str>> = KdTree::new();
+    let points = [Point2D::new(1.0, 2.0, Some("A")), Point2D::new(3.0, 4.0, Some("B")), Point2D::new(-1.0, -2.0, Some("C")), Point2D::new(1.5, 3.2, Some("D")),
+        Point2D::new(0.5, 2., Some("E")), Point2D::new(0.25, 2., Some("F")), Point2D::new(0.5, 1., Some("G"))];
+
+    for p in points.clone() {
+        tree.insert(p).unwrap();
+    }
+
+    for p in &points {
+       assert!(tree.delete(p));
+        let knn_after = tree.knn_search::<EuclideanDistance>(&p, KNN_COUNT);
+        for pt in &knn_after {
+            debug!("3D kNN after deletion: {:?}", pt);
+            assert_ne!(
+                pt.data,
+                p.data,
+                "Deleted 2D point still returned in kNN search"
+            );
+        }
+       
+    }
+}
+
+
+
+#[test]
 fn test_kdtree_delete_resets_k() {
     let mut tree: KdTree<Point2D<&str>> = KdTree::new();
     let p1 = Point2D::new(1.0, 2.0, Some("A"));
